@@ -115,4 +115,3 @@ def analyze_full_content():
 
 if __name__ == "__main__":
     analyze_full_content()
-print("elahe234")
