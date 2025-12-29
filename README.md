@@ -1,6 +1,12 @@
 
 # 🎗️ Breast Cancer Detection System (Full-Stack)
 
+![Python](https://img.shields.io/badge/Python-3.9%2B-blue?logo=python&logoColor=white)
+![PyTorch](https://img.shields.io/badge/PyTorch-Deep_Learning-EE4C2C?logo=pytorch&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-Backend-009688?logo=fastapi&logoColor=white)
+![React](https://img.shields.io/badge/React-Frontend-61DAFB?logo=react&logoColor=black)
+![License](https://img.shields.io/badge/License-MIT-green)
+
 ## 📌 Project Overview
 
 This project is a comprehensive **Full-Stack Breast Cancer Detection System** utilizing Deep Learning on mammogram images (**CBIS-DDSM** dataset).
