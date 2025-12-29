@@ -172,6 +172,17 @@ Since the full-stack app requires a browser environment, use Colab only for **mo
 * **Grad-CAM** hooks into the final convolutional layer to capture gradients.
 * A heatmap is generated and superimposed on the original image to visualize the region of interest (ROI).
 
+---
+
+🎓 Academic Acknowledgement
+This project was developed as part of the Artificial Intelligence course curriculum.
+
+Supervisor:
+
+Dr. Hamidreza Bolhasani
+
+We express our gratitude for the guidance and scientific supervision provided throughout the development of this research project.
+
 
 6. **Response Construction:**
 * The backend constructs a JSON payload containing the Prediction Class, Confidence Score (%), and the Base64-encoded Heatmap for rendering.
