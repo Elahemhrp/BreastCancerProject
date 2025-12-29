@@ -110,16 +110,29 @@ python train_script.py --backbone resnet34 --use-clahe --epochs 10
 * `--batch-size`: Set batch size (default: 32).
 
 ---
+## 📊 Methodology & Workflow
 
-## 📊 Methodology
+1. **Client-Side Processing (Frontend):**
+   - The user selects an image via the **React** interface.
+   - The image is converted to Base64 and sent asynchronously using `Axios` to the FastAPI backend.
 
-1. **Input:** User uploads a mammogram patch via the React UI.
-2. **Validation:** Backend checks if the image is a valid tissue scan (not a mask) using `count_unique_colors`.
-3. **Enhancement:** Image is processed with **CLAHE** (ClipLimit=2.0).
-4. **Inference:** The model predicts the probability of malignancy.
-5. **Explanation:** **Grad-CAM** computes gradients for the predicted class to generate a heatmap.
-6. **Output:** JSON response containing Class, Confidence Score, and Base64 Heatmap is sent to the frontend.
+2. **Data Validation (Backend):**
+   - The system validates the file format and checks for "mask images" vs "tissue scans" using the **`count_unique_colors`** heuristic algorithm.
 
+3. **Advanced Preprocessing:**
+   - **CLAHE Enhancement:** A Contrast Limited Adaptive Histogram Equalization (ClipLimit=2.0) is applied to emphasize tissue structures.
+   - **Normalization:** The image is resized to `224x224` and normalized using ImageNet mean/std standards.
+
+4. **AI Inference Engine:**
+   - The image is passed through the loaded **PyTorch Backbone** (ResNet18/34 or EfficientNet).
+   - The model acts as a binary classifier, calculating the logits for "Benign" vs "Malignant".
+
+5. **Explainability (XAI):**
+   - **Grad-CAM** hooks into the final convolutional layer to capture gradients.
+   - A heatmap is generated and superimposed on the original image to visualize the region of interest (ROI).
+
+6. **Response Construction:**
+   - The backend constructs a JSON payload containing the **Prediction Class**, **Confidence Score (%)**, and the **Base64-encoded Heatmap** for rendering.
 ```
 
 ```
