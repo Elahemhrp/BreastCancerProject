@@ -1,26 +1,55 @@
-# 🧠 Breast Cancer Detection - Backend API
+# 🎨 Breast Cancer Detection - Frontend Client
 
-این بخش شامل هسته پردازشی پروژه تشخیص سرطان پستان است که با زبان **Python** و فریم‌ورک **FastAPI** توسعه داده شده است. وظیفه این بخش، دریافت تصاویر، پیش‌پردازش، اجرای مدل هوش مصنوعی (ResNet/EfficientNet) و تولید خروجی‌های تفسیرپذیر (Grad-CAM) است.
+This directory contains the **Client-Side** application for the Breast Cancer Detection System. It is a modern, responsive Single Page Application (SPA) built with **React** and **Vite**, designed to provide a seamless user experience for uploading mammograms and visualizing diagnostic results.
 
-## 🛠️ تکنولوژی‌های استفاده شده (Tech Stack)
+The interface follows a clean, medical-grade aesthetic using **Shadcn UI** and **Tailwind CSS**.
 
-* **Web Framework:** [FastAPI](https://fastapi.tiangolo.com/) (برای ساخت API سریع و مدرن)
-* **Deep Learning:** [PyTorch](https://pytorch.org/) & [Torchvision](https://pytorch.org/vision/stable/index.html)
-* **Image Processing:** [OpenCV](https://opencv.org/) & [Pillow](https://python-pillow.org/)
-* **Explainable AI:** [Grad-CAM](https://github.com/jacobgil/pytorch-grad-cam) (برای تولید نقشه‌های حرارتی)
-* **Server:** [Uvicorn](https://www.uvicorn.org/) (سرور ASGI)
+## 🛠️ Tech Stack & Libraries
 
-## 🚀 راهنمای نصب و اجرا (Installation & Run)
+The frontend is built using a modern stack focused on performance, type safety, and component reusability:
 
-پیش‌نیاز: مطمئن شوید که **Python 3.8+** روی سیستم شما نصب است.
+### Core
+* **Framework:** [React 18](https://react.dev/)
+* **Build Tool:** [Vite](https://vitejs.dev/) (Fast HMR & Bundling)
+* **Language:** [TypeScript](https://www.typescriptlang.org/) (Strict typing)
 
-### ۱. ساخت محیط مجازی (اختیاری ولی پیشنهادی)
-```bash
-python -m venv venv
-# فعال‌سازی در ویندوز:
-venv\Scripts\activate
-# فعال‌سازی در مک/لینوکس:
-source venv/bin/activate
-├── checkpoints/             # 💾 فایل‌های مدل آموزش دیده (.pth)
-├── data/                    # داده‌های ورودی و CSVها
-└── requirements.txt         # لیست کتابخانه‌های پایتون
+### UI & Styling
+* **Styling Engine:** [Tailwind CSS](https://tailwindcss.com/)
+* **Component Library:** [Shadcn UI](https://ui.shadcn.com/) (built on top of [Radix UI](https://www.radix-ui.com/))
+* **Icons:** [Lucide React](https://lucide.dev/)
+* **Animations:** `tailwindcss-animate`
+
+### State & Logic
+* **Routing:** [React Router DOM](https://reactrouter.com/)
+* **Data Fetching:** [TanStack Query (React Query)](https://tanstack.com/query/latest) (For managing API state)
+* **Form Handling:** [React Hook Form](https://react-hook-form.com/) + [Zod](https://zod.dev/) (Validation schema)
+* **Charts:** [Recharts](https://recharts.org/) (For visualizing confidence scores)
+
+## 🚀 Key Features
+
+* **Interactive Dashboard:** A clean interface for managing patient scans.
+* **Smart Upload:** Drag-and-drop functionality with client-side validation.
+* **Result Visualization:**
+    * Real-time rendering of **Grad-CAM Heatmaps**.
+    * Confidence score gauges and probability charts.
+* **Responsive Design:** Fully optimized for Desktop, Tablet, and Mobile views.
+* **Toast Notifications:** Real-time feedback using `sonner`.
+
+## 📂 Project Structure
+
+```text
+frontend/
+├── public/              # Static assets (favicons, etc.)
+├── src/
+│   ├── components/      # Reusable UI components
+│   │   ├── ui/          # Shadcn UI primitives (Button, Card, etc.)
+│   │   ├── dashboard/   # Dashboard-specific widgets
+│   │   └── layout/      # Navbar, Sidebar, Footer
+│   ├── hooks/           # Custom React Hooks (use-toast, etc.)
+│   ├── pages/           # Application Routes (Home, Dashboard, About)
+│   ├── lib/             # Utilities (utils.ts)
+│   ├── App.tsx          # Main Application Component
+│   └── main.tsx         # Entry Point
+├── package.json         # Dependencies & Scripts
+├── tailwind.config.js   # Tailwind Configuration
+└── vite.config.ts       # Vite Configuration
