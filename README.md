@@ -190,6 +190,3 @@ This project was developed as part of the **Artificial Intelligence** course cur
 
 We express our gratitude for the guidance and scientific supervision provided throughout the development of this research project.
 
-```
-
-```
