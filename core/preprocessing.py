@@ -57,7 +57,7 @@ def get_transforms(phase="train"):
     """
     # Base transforms (CLAHE + Normalize + ToTensor)
     base_transforms = [
-        A.CLAHE(p=1.0, clip_limit=2.0, tile_grid_size=(8, 8)),
+        A.CLAHE(p=1.0, clip_limit=(2.0, 2.0), tile_grid_size=(8, 8)),
         A.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
         ToTensorV2()
     ]
