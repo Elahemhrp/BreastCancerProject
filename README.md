@@ -133,6 +133,3 @@ python train_script.py --backbone resnet34 --use-clahe --epochs 10
 
 6. **Response Construction:**
    - The backend constructs a JSON payload containing the **Prediction Class**, **Confidence Score (%)**, and the **Base64-encoded Heatmap** for rendering.
-```
-
-```
