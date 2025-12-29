@@ -19,12 +19,37 @@ class Predictor:
         if os.path.exists(self.model_path):
             print(f"Loading model from {self.model_path}...")
             try:
-                self.model = BreastCancerModel()
-                self.model.load_state_dict(torch.load(self.model_path, map_location=self.device))
+                # 1. لود کردن فایل چک‌پوینت
+                checkpoint = torch.load(self.model_path, map_location=self.device)
+                
+                # 2. تشخیص معماری مدل از داخل چک‌پوینت (اگر ذخیره شده باشد)
+                # این کار باعث می‌شود اگر مدل با ResNet34 آموزش دیده ولی کانفیگ ResNet18 است، خطا ندهد
+                loaded_backbone = None
+                if isinstance(checkpoint, dict) and 'backbone' in checkpoint:
+                    loaded_backbone = checkpoint['backbone']
+                    print(f"Detected backbone in checkpoint: {loaded_backbone}")
+                
+                # ساخت مدل با معماری درست
+                self.model = BreastCancerModel(backbone_name=loaded_backbone)
+                
+                # 3. استخراج وزن‌ها (State Dict)
+                if isinstance(checkpoint, dict) and 'model_state_dict' in checkpoint:
+                    print("Checkpoint contains metadata. Extracting 'model_state_dict'...")
+                    state_dict = checkpoint['model_state_dict']
+                else:
+                    # شاید فایل فقط شامل وزن‌ها باشد (مثل model.pth)
+                    state_dict = checkpoint
+                
+                # 4. بارگذاری وزن‌ها در مدل
+                self.model.load_state_dict(state_dict)
                 self.model.to(self.device)
                 self.model.eval()
+                print("Model loaded successfully!")
+                
             except Exception as e:
                 print(f"Error loading model: {e}. Switching to Mock Mode.")
+                import traceback
+                traceback.print_exc() # چاپ جزئیات خطا برای دیباگ بهتر
                 self.mock_mode = True
         else:
             print(f"Model file {self.model_path} not found. Switching to Mock Mode.")
@@ -33,20 +58,21 @@ class Predictor:
     def predict(self, image_path_or_pil):
         """
         Predicts the class of the image.
-        Returns a dictionary with:
-            - class: Predicted class name
-            - confidence: Confidence score (0-1)
-            - yellow_flag: Boolean, true if confidence is uncertain
-            - raw_probabilities: List of probabilities
-            - mock: Boolean, true if mock mode was used
         """
         if self.mock_mode:
             return self._mock_predict()
             
-        # Real Prediction
+        # 1. اطمینان از اینکه مدل در حالت ارزیابی است (خاموش کردن Dropout و BatchNorm)
+        # این خط حیاتی است برای جلوگیری از نتایج رندوم
+        if self.model:
+            self.model.eval()
+
+        # 2. پیش‌پردازش
+        # نکته: مطمئن شوید در core/preprocessing.py تابع preprocess_image از phase='test' استفاده می‌کند
         tensor = preprocess_image(image_path_or_pil).to(self.device)
         
-        with torch.no_grad():
+        # 3. پیش‌بینی
+        with torch.no_grad(): # خاموش کردن محاسبه گرادیان
             outputs = self.model(tensor)
             probs = F.softmax(outputs, dim=1)
             confidence, preds = torch.max(probs, 1)
@@ -58,9 +84,6 @@ class Predictor:
         # Yellow Flag Logic
         yellow_flag = False
         low, high = Config.YELLOW_FLAG_RANGE
-        # Check if the max probability is within the uncertain range
-        # Note: If binary classification, uncertainty is around 0.5.
-        # If confidence is 0.51, it's uncertain.
         if low <= confidence_score <= high:
             yellow_flag = True
             
