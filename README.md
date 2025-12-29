@@ -168,7 +168,4 @@ Since the full-stack app requires a browser environment, use Colab only for **mo
 
 
 6. **Response Construction:**
-* The backend constructs a JSON payload containing the **Prediction Class**, **Confidence Score (%)**, and the **Base64-encoded Heatmap** for rendering.
-
-
-ad containing the **Prediction Class**, **Confidence Score (%)**, and the **Base64-encoded Heatmap** for rendering.
+* The backend constructs a JSON payload containing the Prediction Class, Confidence Score (%), and the Base64-encoded Heatmap for rendering.
