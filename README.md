@@ -18,8 +18,9 @@ The system classifies microcalcifications/masses as **Benign** or **Malignant** 
 
 ### 🧠 AI & Backend Core
 - **Smart Preprocessing Pipeline:**
-  - **Heuristic Data Selection:** Automatically distinguishes between "cropped tissue images" and "binary ROI masks" using color histogram analysis (>15 unique colors).
+  - **Heuristic Data Selection:** Automatically distinguishes between "cropped tissue images" and "binary ROI masks" using color histogram analysis.
   - **CLAHE Enhancement:** Applies *Contrast Limited Adaptive Histogram Equalization* to reveal hidden details in dense breast tissue.
+- **Robust Training Pipeline:** Implements **Class Weighting** to handle dataset imbalance and logs comprehensive metrics (**AUC, F1-Score, Precision, Recall**) for scientific evaluation.
 - **Flexible Models:** Supports **ResNet18**, **ResNet34**, and **EfficientNet** backbones via Transfer Learning.
 - **Explainable AI (XAI):** Generates **Grad-CAM heatmaps** to make the "black box" decisions interpretable for medical professionals.
 
@@ -57,9 +58,19 @@ root/
 
 ---
 
+## 📂 Dataset Details
+
+This project uses the **CBIS-DDSM** (Curated Breast Imaging Subset of DDSM) dataset.
+
+* **Input:** Mammogram patches (grayscale).
+* **Classes:** Benign (0) vs. Malignant (1).
+* **Structure:** The core data loader automatically handles the complex directory structure (images organized by patient case) and metadata CSVs.
+
+---
+
 ## 🛠️ Installation & Run Guide
 
-To run the full system, you need to set up two separate terminals: one for the **Backend (Python)** and one for the **Frontend (React)**.
+To run the full system locally, you need to set up two separate terminals: one for the Backend and one for the Frontend.
 
 ### 1️⃣ Backend Setup (Terminal 1)
 
@@ -93,9 +104,11 @@ npm run dev
 
 ---
 
-## 🏋️ Training the Model (Optional)
+## 🏋️ Training the Model
 
-If you want to retrain the model from scratch instead of using the pre-trained weights, use the `train_script.py`:
+### Option A: Local Training
+
+If you want to retrain the model from scratch on your local machine:
 
 ```bash
 # Train with ResNet34 and CLAHE enabled
@@ -109,27 +122,56 @@ python train_script.py --backbone resnet34 --use-clahe --epochs 10
 * `--no-clahe`: Disable CLAHE preprocessing.
 * `--batch-size`: Set batch size (default: 32).
 
+### Option B: ☁️ Training on Google Colab
+
+Since the full-stack app requires a browser environment, use Colab only for **model training** (GPU acceleration recommended):
+
+```python
+# 1. Clone Repo & Install Deps
+!git clone [https://github.com/yourusername/breast-cancer-project.git](https://github.com/yourusername/breast-cancer-project.git)
+%cd breast-cancer-project
+!pip install -r requirements.txt
+
+# 2. Run training script
+!python train_script.py --backbone resnet34 --epochs 10
+
+```
+
+> **Note:** Ensure your dataset is uploaded to `data/` or mounted via Google Drive.
+
 ---
+
 ## 📊 Methodology & Workflow
 
 1. **Client-Side Processing (Frontend):**
-   - The user selects an image via the **React** interface.
-   - The image is converted to Base64 and sent asynchronously using `Axios` to the FastAPI backend.
+* The user selects an image via the **React** interface.
+* The image is converted to Base64 and sent asynchronously using `Axios` to the FastAPI backend.
+
 
 2. **Data Validation (Backend):**
-   - The system validates the file format and checks for "mask images" vs "tissue scans" using the **`count_unique_colors`** heuristic algorithm.
+* The system validates the file format and checks for "mask images" vs "tissue scans" using the **`count_unique_colors`** heuristic algorithm.
+
 
 3. **Advanced Preprocessing:**
-   - **CLAHE Enhancement:** A Contrast Limited Adaptive Histogram Equalization (ClipLimit=2.0) is applied to emphasize tissue structures.
-   - **Normalization:** The image is resized to `224x224` and normalized using ImageNet mean/std standards.
+* **CLAHE Enhancement:** A Contrast Limited Adaptive Histogram Equalization (ClipLimit=2.0) is applied to emphasize tissue structures.
+* **Normalization:** The image is resized to `224x224` and normalized using ImageNet mean/std standards.
+
 
 4. **AI Inference Engine:**
-   - The image is passed through the loaded **PyTorch Backbone** (ResNet18/34 or EfficientNet).
-   - The model acts as a binary classifier, calculating the logits for "Benign" vs "Malignant".
+* The image is passed through the loaded **PyTorch Backbone** (ResNet18/34 or EfficientNet).
+* The model acts as a binary classifier, calculating the logits for "Benign" vs "Malignant".
+
 
 5. **Explainability (XAI):**
-   - **Grad-CAM** hooks into the final convolutional layer to capture gradients.
-   - A heatmap is generated and superimposed on the original image to visualize the region of interest (ROI).
+* **Grad-CAM** hooks into the final convolutional layer to capture gradients.
+* A heatmap is generated and superimposed on the original image to visualize the region of interest (ROI).
+
 
 6. **Response Construction:**
-   - The backend constructs a JSON payload containing the **Prediction Class**, **Confidence Score (%)**, and the **Base64-encoded Heatmap** for rendering.
+* The backend constructs a JSON payload containing the **Prediction Class**, **Confidence Score (%)**, and the **Base64-encoded Heatmap** for rendering.
+
+
+
+```
+
+```ad containing the **Prediction Class**, **Confidence Score (%)**, and the **Base64-encoded Heatmap** for rendering.
