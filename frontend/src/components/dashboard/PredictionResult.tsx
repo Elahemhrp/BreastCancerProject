@@ -7,8 +7,10 @@ import { AlertTriangle, CheckCircle2, XCircle, AlertCircle } from 'lucide-react'
 import { cn } from '@/lib/utils';
 
 export interface PredictionData {
-  prediction: 'benign' | 'malignant';
+  prediction: 'benign' | 'malignant' | 'Uncertain'; // اضافه کردن Uncertain برای اطمینان
   confidence: number;
+  yellow_flag: boolean;      // ✅ این خط اضافه شد تا خطا رفع شود
+  heatmap_base64?: string;   // ✅ این هم برای نمایش هیت‌مپ در آینده نیاز داریم
 }
 
 interface PredictionResultProps {
@@ -19,8 +21,9 @@ interface PredictionResultProps {
 const PredictionResult: React.FC<PredictionResultProps> = ({ result, isLoading }) => {
   const { t, isRTL } = useLanguage();
 
-  const isUncertain = result && result.confidence >= 45 && result.confidence <= 55;
-
+  // اصلاح منطق: اولویت با پرچم زردی است که از بک‌اند (پایتون) می‌آید
+  // شرط دوم (بازه ۴۵ تا ۵۵) محض احتیاط است اگر بک‌اند پرچم را نفرستاد
+  const isUncertain = result?.yellow_flag || (result && result.confidence >= 45 && result.confidence <= 55);
   const getStatusConfig = () => {
     if (!result) return null;
     

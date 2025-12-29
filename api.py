@@ -9,6 +9,7 @@ import base64
 from pytorch_grad_cam import GradCAM
 from pytorch_grad_cam.utils.image import show_cam_on_image
 from torchvision import transforms
+from core.preprocessing import preprocess_image, apply_clahe
 
 # ایمپورت کردن ماژول‌های پروژه خودتان
 from core.inference import Predictor
@@ -82,11 +83,7 @@ def generate_heatmap(pil_image, model, cam_obj):
         img_np = np.array(img_resized)
         
         # اگر تصویر ورودی سیاه و سفید است، باید به RGB تبدیل شود تا بتوانیم هیت‌مپ رنگی روی آن بکشیم
-        if len(img_np.shape) == 2:
-            # تبدیل Grayscale به RGB با تکرار کانال‌ها
-            img_np = np.stack([img_np] * 3, axis=-1)
-        elif img_np.shape[2] == 1:
-            img_np = np.concatenate([img_np, img_np, img_np], axis=-1)
+        img_np_enhanced = apply_clahe(img_np) 
             
         # نرمال‌سازی بین 0 و 1 (الزامی برای show_cam_on_image)
         img_float = img_np.astype(np.float32) / 255.0
@@ -103,6 +100,7 @@ def generate_heatmap(pil_image, model, cam_obj):
 
 # --- Endpoint اصلی ---
 @app.post("/predict")
+@app.post("/predict")
 async def predict_endpoint(file: UploadFile = File(...)):
     # 1. خواندن فایل آپلود شده
     try:
@@ -114,9 +112,13 @@ async def predict_endpoint(file: UploadFile = File(...)):
     # 2. دریافت پیش‌بینی (کلاس و درصد اطمینان)
     result = predictor.predict(image)
     
+    # اصلاح ۱: تبدیل بازه ۰-۱ به ۰-۱۰۰ برای فرانت‌اند
+    confidence_percent = result['confidence'] 
+    
     # 3. تولید هیت‌مپ (فقط اگر مدل واقعی باشد)
     heatmap_b64 = None
     if not result.get("mock", False) and cam:
+        # تابع generate_heatmap اکنون خودش CLAHE را روی پس‌زمینه اعمال می‌کند
         heatmap_img = generate_heatmap(image, predictor.model, cam)
         if heatmap_img:
             heatmap_b64 = image_to_base64(heatmap_img)
@@ -124,8 +126,8 @@ async def predict_endpoint(file: UploadFile = File(...)):
     # 4. آماده‌سازی خروجی نهایی JSON
     response = {
         "class": result['class'],
-        "confidence": result['confidence'],
-        "yellow_flag": result['yellow_flag'],
+        "confidence": confidence_percent,     # ✅ مقدار در بازه ۰ تا ۱۰۰
+        "yellow_flag": result['yellow_flag'], # ✅ شامل پرچم زرد برای فرانت
         "heatmap_base64": heatmap_b64,
         "is_mock": result.get("mock", False)
     }
