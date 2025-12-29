@@ -168,25 +168,43 @@ Since the full-stack app requires a browser environment, use Colab only for **mo
 * The model acts as a binary classifier, calculating the logits for "Benign" vs "Malignant".
 
 
-5. **Explainability (XAI):**
+5. **Uncertainty Quantification & Safety:**
+* The system evaluates the confidence score. If the probability falls within the **ambiguity range** (e.g., near the decision boundary), a **Warning Flag** is triggered.
+* This alerts the user that the model is uncertain, prompting manual medical review.
+
+
+6. **Explainability (XAI):**
 * **Grad-CAM** hooks into the final convolutional layer to capture gradients.
 * A heatmap is generated and superimposed on the original image to visualize the region of interest (ROI).
 
 
-6. **Response Construction:**
-* The backend constructs a JSON payload containing the **Prediction Class**, **Confidence Score (%)**, and the **Base64-encoded Heatmap** for rendering.
+7. **Response Construction:**
+* The backend constructs a JSON payload containing the **Prediction Class**, **Confidence Score (%)**, **Uncertainty Warning**, and the **Base64-encoded Heatmap** for rendering.
 
 
 
 ---
 
-## 🎓 Academic Acknowledgement
+## 👥 Contributors & Academic Context
 
-This project was developed as part of the **Artificial Intelligence** course curriculum.
+This project was developed by a dedicated team of students from **Kharazmi University** as part of the **Artificial Intelligence** course.
 
 **Supervisor:**
 
-* **Dr. Hamidreza Bolhasani**
+* 🎓 **Dr. Hamidreza Bolhasani**
 
-We express our gratitude for the guidance and scientific supervision provided throughout the development of this research project.
+**Development Team:**
 
+| Team Member | GitHub Profile |
+| --- | --- |
+| **[Alireza Shams]** | [](https://www.google.com/search?q=https://github.com/alirzashams) |
+| **[Elahe Moharrampour]** | [](https://www.google.com/search?q=https://github.com/Elahemhrp) |
+| **[Hadi Goli Bidgoli]** | [](https://www.google.com/search?q=https://github.com/Hadi-Goli) |
+
+---
+
+*We express our gratitude for the guidance and scientific supervision provided throughout the development of this research project.*
+
+```
+
+```
