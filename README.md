@@ -197,14 +197,11 @@ This project was developed by a dedicated team of students from **Kharazmi Unive
 
 | Team Member | GitHub Profile |
 | --- | --- |
-| **[Alireza Shams]** | [](https://www.google.com/search?q=https://github.com/alirzashams) |
-| **[Elahe Moharrampour]** | [](https://www.google.com/search?q=https://github.com/Elahemhrp) |
-| **[Hadi Goli Bidgoli]** | [](https://www.google.com/search?q=https://github.com/Hadi-Goli) |
+| **Alireza Shams** | [](https://github.com/alirzashams) |
+| **Elahe Moharrampour** | [](https://github.com/Elahemhrp) |
+| **Hadi Goli Bidgoli** | [](https://github.com/Hadi-Goli) |
 
 ---
 
 *We express our gratitude for the guidance and scientific supervision provided throughout the development of this research project.*
 
-```
-
-```
