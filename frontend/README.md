@@ -1,73 +1,55 @@
-# Welcome to your Lovable project
+# 🎨 Breast Cancer Detection - Frontend Client
 
-## Project info
+This directory contains the **Client-Side** application for the Breast Cancer Detection System. It is a modern, responsive Single Page Application (SPA) built with **React** and **Vite**, designed to provide a seamless user experience for uploading mammograms and visualizing diagnostic results.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+The interface follows a clean, medical-grade aesthetic using **Shadcn UI** and **Tailwind CSS**.
 
-## How can I edit this code?
+## 🛠️ Tech Stack & Libraries
 
-There are several ways of editing your application.
+The frontend is built using a modern stack focused on performance, type safety, and component reusability:
 
-**Use Lovable**
+### Core
+* **Framework:** [React 18](https://react.dev/)
+* **Build Tool:** [Vite](https://vitejs.dev/) (Fast HMR & Bundling)
+* **Language:** [TypeScript](https://www.typescriptlang.org/) (Strict typing)
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+### UI & Styling
+* **Styling Engine:** [Tailwind CSS](https://tailwindcss.com/)
+* **Component Library:** [Shadcn UI](https://ui.shadcn.com/) (built on top of [Radix UI](https://www.radix-ui.com/))
+* **Icons:** [Lucide React](https://lucide.dev/)
+* **Animations:** `tailwindcss-animate`
 
-Changes made via Lovable will be committed automatically to this repo.
+### State & Logic
+* **Routing:** [React Router DOM](https://reactrouter.com/)
+* **Data Fetching:** [TanStack Query (React Query)](https://tanstack.com/query/latest) (For managing API state)
+* **Form Handling:** [React Hook Form](https://react-hook-form.com/) + [Zod](https://zod.dev/) (Validation schema)
+* **Charts:** [Recharts](https://recharts.org/) (For visualizing confidence scores)
 
-**Use your preferred IDE**
+## 🚀 Key Features
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+* **Interactive Dashboard:** A clean interface for managing patient scans.
+* **Smart Upload:** Drag-and-drop functionality with client-side validation.
+* **Result Visualization:**
+    * Real-time rendering of **Grad-CAM Heatmaps**.
+    * Confidence score gauges and probability charts.
+* **Responsive Design:** Fully optimized for Desktop, Tablet, and Mobile views.
+* **Toast Notifications:** Real-time feedback using `sonner`.
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## 📂 Project Structure
 
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+```text
+frontend/
+├── public/              # Static assets (favicons, etc.)
+├── src/
+│   ├── components/      # Reusable UI components
+│   │   ├── ui/          # Shadcn UI primitives (Button, Card, etc.)
+│   │   ├── dashboard/   # Dashboard-specific widgets
+│   │   └── layout/      # Navbar, Sidebar, Footer
+│   ├── hooks/           # Custom React Hooks (use-toast, etc.)
+│   ├── pages/           # Application Routes (Home, Dashboard, About)
+│   ├── lib/             # Utilities (utils.ts)
+│   ├── App.tsx          # Main Application Component
+│   └── main.tsx         # Entry Point
+├── package.json         # Dependencies & Scripts
+├── tailwind.config.js   # Tailwind Configuration
+└── vite.config.ts       # Vite Configuration
