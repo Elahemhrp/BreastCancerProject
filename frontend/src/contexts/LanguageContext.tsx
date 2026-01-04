@@ -83,8 +83,8 @@ const translations: Record<Language, Record<string, string>> = {
     'about.role.datascientist': 'Data Scientist',
     'about.role.fullstack': 'Full Stack Developer',
     'about.role.mleng': 'ML Engineer',
-    'about.role.uiux': 'UI/UX Designer',
-    'about.university': 'University Capstone Project',
+    'about.role.uiux': "Computer Vision Enginner & UI/UX",
+    'about.university': 'University Kharazmi Project',
 
     // Common
     'common.loading': 'Loading...',

@@ -35,7 +35,7 @@ const TeamCard: React.FC<TeamCardProps> = ({ member }) => {
           <div className="relative mb-4">
             <div className="absolute inset-0 bg-accent/30 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
             <Avatar className="h-24 w-24 border-4 border-background shadow-lg">
-              <AvatarImage src={member.avatar} alt={member.name} />
+              <AvatarImage src={member.image} alt={member.name} />
               <AvatarFallback className="bg-primary text-primary-foreground text-xl font-bold">
                 {getInitials(member.name)}
               </AvatarFallback>
