@@ -1,0 +1,207 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* MicroCalc Design System - Scientific Professional Theme */
+
+@layer base {
+  :root {
+    /* Core Colors - Scientific Professional */
+    --background: 210 20% 98%;
+    --foreground: 213 40% 16%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 213 40% 16%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 213 40% 16%;
+
+    /* Primary - Dark Navy Blue */
+    --primary: 213 50% 23%;
+    --primary-foreground: 210 40% 98%;
+
+    /* Secondary - Light Gray */
+    --secondary: 210 20% 96%;
+    --secondary-foreground: 213 40% 16%;
+
+    /* Muted */
+    --muted: 210 15% 94%;
+    --muted-foreground: 213 20% 45%;
+
+    /* Accent - Soft Pink (Breast Cancer Awareness) */
+    --accent: 346 75% 80%;
+    --accent-foreground: 346 80% 25%;
+
+    /* Success - Benign */
+    --success: 152 60% 45%;
+    --success-foreground: 0 0% 100%;
+
+    /* Warning - Uncertain */
+    --warning: 45 95% 50%;
+    --warning-foreground: 45 95% 15%;
+
+    /* Destructive - Malignant */
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 214 25% 88%;
+    --input: 214 25% 88%;
+    --ring: 346 75% 70%;
+
+    --radius: 0.75rem;
+
+    /* Sidebar */
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 213 40% 16%;
+    --sidebar-primary: 213 50% 23%;
+    --sidebar-primary-foreground: 210 40% 98%;
+    --sidebar-accent: 346 75% 95%;
+    --sidebar-accent-foreground: 213 50% 23%;
+    --sidebar-border: 214 25% 90%;
+    --sidebar-ring: 346 75% 70%;
+
+    /* Typography */
+    --font-en: 'Inter', system-ui, sans-serif;
+    --font-fa: 'Vazirmatn', 'Tahoma', sans-serif;
+  }
+
+  .dark {
+    --background: 213 45% 8%;
+    --foreground: 210 40% 96%;
+
+    --card: 213 40% 12%;
+    --card-foreground: 210 40% 96%;
+
+    --popover: 213 40% 12%;
+    --popover-foreground: 210 40% 96%;
+
+    --primary: 210 50% 70%;
+    --primary-foreground: 213 45% 8%;
+
+    --secondary: 213 35% 18%;
+    --secondary-foreground: 210 40% 96%;
+
+    --muted: 213 30% 20%;
+    --muted-foreground: 210 20% 60%;
+
+    --accent: 346 70% 65%;
+    --accent-foreground: 346 80% 95%;
+
+    --success: 152 55% 40%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 45 90% 45%;
+    --warning-foreground: 45 95% 10%;
+
+    --destructive: 0 65% 45%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 213 30% 22%;
+    --input: 213 30% 22%;
+    --ring: 346 70% 60%;
+
+    --sidebar-background: 213 40% 10%;
+    --sidebar-foreground: 210 40% 96%;
+    --sidebar-primary: 210 50% 70%;
+    --sidebar-primary-foreground: 213 45% 8%;
+    --sidebar-accent: 346 50% 20%;
+    --sidebar-accent-foreground: 346 70% 80%;
+    --sidebar-border: 213 30% 18%;
+    --sidebar-ring: 346 70% 60%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: var(--font-en);
+  }
+
+  /* RTL Support for Persian */
+  [dir="rtl"] {
+    font-family: var(--font-fa);
+  }
+
+  [dir="rtl"] .text-content {
+    text-align: right;
+  }
+
+  [dir="ltr"] .text-content {
+    text-align: left;
+  }
+}
+
+@layer utilities {
+  /* Smooth transitions for language switching */
+  .lang-transition {
+    @apply transition-all duration-300 ease-in-out;
+  }
+
+  /* Gradient overlays */
+  .gradient-overlay {
+    background: linear-gradient(
+      135deg,
+      hsl(var(--primary) / 0.05) 0%,
+      hsl(var(--accent) / 0.1) 100%
+    );
+  }
+
+  /* Glass morphism effect */
+  .glass {
+    @apply bg-card/80 backdrop-blur-md;
+  }
+
+  /* Subtle shadow for cards */
+  .shadow-soft {
+    box-shadow: 0 4px 20px -4px hsl(var(--primary) / 0.1),
+                0 2px 8px -2px hsl(var(--primary) / 0.05);
+  }
+
+  /* Pink accent glow */
+  .glow-accent {
+    box-shadow: 0 0 20px hsl(var(--accent) / 0.3);
+  }
+
+  /* Upload zone styles */
+  .upload-zone {
+    @apply border-2 border-dashed border-border rounded-xl p-8;
+    @apply transition-all duration-200 ease-in-out;
+    @apply hover:border-accent hover:bg-accent/5;
+  }
+
+  .upload-zone.dragging {
+    @apply border-accent bg-accent/10 scale-[1.02];
+  }
+
+  /* Result badges */
+  .badge-benign {
+    @apply bg-success text-success-foreground;
+  }
+
+  .badge-malignant {
+    @apply bg-destructive text-destructive-foreground;
+  }
+
+  .badge-uncertain {
+    @apply bg-warning text-warning-foreground;
+  }
+
+  /* Scrollbar styling */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    @apply bg-muted rounded-full;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-border rounded-full;
+    @apply hover:bg-muted-foreground/30;
+  }
+}

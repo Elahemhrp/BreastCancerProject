@@ -14,7 +14,7 @@ import time
 import numpy as np
 import torch
 import torch.nn as nn
-from torch.utils.data import DataLoader, random_split
+from torch.utils.data import DataLoader, random_split, WeightedRandomSampler
 from torch.optim import Adam, AdamW
 from torch.optim.lr_scheduler import ReduceLROnPlateau, CosineAnnealingLR
 import matplotlib.pyplot as plt
@@ -34,13 +34,13 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
+
 class Trainer:
     """
     Training orchestrator for breast cancer classification.
     
     Args:
         backbone: Model backbone name ('resnet18', 'resnet34', 'efficientnet_b0')
-        use_clahe: Whether to use CLAHE preprocessing
         batch_size: Batch size for training
         learning_rate: Initial learning rate
         num_epochs: Number of training epochs
@@ -51,7 +51,6 @@ class Trainer:
     def __init__(
         self,
         backbone: str = None,
-        use_clahe: bool = True,
         batch_size: int = None,
         learning_rate: float = None,
         num_epochs: int = None,
@@ -59,7 +58,6 @@ class Trainer:
         save_dir: str = None
     ):
         self.backbone = backbone or Config.BACKBONE
-        self.use_clahe = use_clahe
         self.batch_size = batch_size or Config.BATCH_SIZE
         self.learning_rate = learning_rate or Config.LEARNING_RATE
         self.num_epochs = num_epochs or Config.NUM_EPOCHS
@@ -81,7 +79,6 @@ class Trainer:
         
         logger.info(f"Trainer initialized:")
         logger.info(f"  Backbone: {self.backbone}")
-        logger.info(f"  CLAHE: {self.use_clahe}")
         logger.info(f"  Device: {self.device}")
         logger.info(f"  Batch size: {self.batch_size}")
         logger.info(f"  Learning rate: {self.learning_rate}")
@@ -93,7 +90,6 @@ class Trainer:
         
         # Load full dataset
         full_dataset = CBISDDSMDataset(
-            use_clahe=self.use_clahe,
             phase='train'  # We'll handle augmentation separately
         )
         
@@ -108,12 +104,41 @@ class Trainer:
             [train_size, val_size],
             generator=torch.Generator().manual_seed(42)
         )
+
+        # Calculate weights for WeightedRandomSampler
+        logger.info("Calculating weights for WeightedRandomSampler...")
+        
+        # Get labels from the full dataset
+        all_labels = np.array(full_dataset.get_labels())
+        
+        # Get indices for the training set
+        train_indices = self.train_dataset.indices
+        train_labels = all_labels[train_indices]
+        
+        # Count classes in training set
+        class_counts = np.bincount(train_labels)
+        logger.info(f"Training Class distribution: {dict(zip(Config.CLASSES, class_counts.tolist()))}")
+        
+        # Compute weight for each class (inverse frequency)
+        class_weights = 1. / class_counts
+        
+        # Assign weight to each sample
+        sample_weights = class_weights[train_labels]
+        sample_weights = torch.from_numpy(sample_weights).double()
+        
+        # Initialize sampler
+        sampler = WeightedRandomSampler(
+            weights=sample_weights,
+            num_samples=len(sample_weights),
+            replacement=True
+        )
         
         # Create data loaders
         self.train_loader = DataLoader(
             self.train_dataset,
             batch_size=self.batch_size,
-            shuffle=True,
+            sampler=sampler, # Use sampler
+            shuffle=False,   # Must be False when using sampler
             num_workers=4,
             pin_memory=True if self.device.type == 'cuda' else False
         )
@@ -126,19 +151,16 @@ class Trainer:
             pin_memory=True if self.device.type == 'cuda' else False
         )
         
-        # Compute class weights for imbalanced data
-        labels = full_dataset.get_labels()
-        class_counts = np.bincount(labels)
-        total = sum(class_counts)
+        # Compute class weights for Loss function
+        total_train = sum(class_counts)
         self.class_weights = torch.tensor(
-            [total / (len(class_counts) * count) for count in class_counts],
+            [total_train / (len(class_counts) * count) for count in class_counts],
             dtype=torch.float32
         ).to(self.device)
         
         logger.info(f"Dataset split: {train_size} train, {val_size} val")
-        logger.info(f"Class distribution: {dict(zip(Config.CLASSES, class_counts.tolist()))}")
-        logger.info(f"Class weights: {self.class_weights.tolist()}")
-        
+        logger.info(f"Loss Class weights: {self.class_weights.tolist()}")
+
     def build_model(self):
         """Initialize model, optimizer, and loss function."""
         logger.info(f"Building model with backbone: {self.backbone}")
@@ -305,7 +327,7 @@ class Trainer:
         logger.info("=" * 60)
         
         return self.history
-    
+
     def save_checkpoint(self, epoch: int, is_best: bool = False):
         """Save model checkpoint."""
         checkpoint = {
@@ -315,7 +337,6 @@ class Trainer:
             'best_val_loss': self.best_val_loss,
             'best_val_acc': self.best_val_acc,
             'backbone': self.backbone,
-            'use_clahe': self.use_clahe,
             'history': dict(self.history)
         }
         
@@ -376,16 +397,16 @@ class Trainer:
         axes[1, 1].legend()
         axes[1, 1].grid(True)
         
-        plt.suptitle(f'{self.backbone} | CLAHE={self.use_clahe}', fontsize=14)
+        plt.suptitle(f'{self.backbone}', fontsize=14)
         plt.tight_layout()
         
         if save_path is None:
-            save_path = os.path.join(self.save_dir, f'learning_curves_{self.backbone}_clahe{self.use_clahe}.png')
+            save_path = os.path.join(self.save_dir, f'learning_curves_{self.backbone}.png')
         
         plt.savefig(save_path, dpi=150)
         plt.close()
         logger.info(f"Learning curves saved to {save_path}")
-    
+
     def evaluate(self, test_loader=None):
         """Final evaluation with detailed metrics."""
         if test_loader is None:
@@ -440,7 +461,7 @@ class Trainer:
             yticklabels=classes,
             ylabel='True Label',
             xlabel='Predicted Label',
-            title=f'Confusion Matrix\n{self.backbone} | CLAHE={self.use_clahe}'
+            title=f'Confusion Matrix\n{self.backbone}'
         )
         
         # Add text annotations
@@ -454,7 +475,7 @@ class Trainer:
         plt.tight_layout()
         
         if save_path is None:
-            save_path = os.path.join(self.save_dir, f'confusion_matrix_{self.backbone}_clahe{self.use_clahe}.png')
+            save_path = os.path.join(self.save_dir, f'confusion_matrix_{self.backbone}.png')
         
         plt.savefig(save_path, dpi=150)
         plt.close()
@@ -463,7 +484,6 @@ class Trainer:
 
 def run_experiment(
     backbone: str = 'resnet34',
-    use_clahe: bool = True,
     num_epochs: int = 10,
     batch_size: int = 32
 ):
@@ -472,7 +492,6 @@ def run_experiment(
     
     Args:
         backbone: Model backbone
-        use_clahe: Whether to use CLAHE
         num_epochs: Number of epochs
         batch_size: Batch size
         
@@ -480,13 +499,12 @@ def run_experiment(
         Trainer object with results
     """
     print("\n" + "=" * 60)
-    print(f"EXPERIMENT: {backbone} | CLAHE={use_clahe}")
+    print(f"EXPERIMENT: {backbone}")
     print("=" * 60 + "\n")
     
     # Create trainer
     trainer = Trainer(
         backbone=backbone,
-        use_clahe=use_clahe,
         num_epochs=num_epochs,
         batch_size=batch_size
     )
@@ -513,6 +531,5 @@ if __name__ == "__main__":
     # Run default experiment
     trainer = run_experiment(
         backbone='resnet34',
-        use_clahe=True,
         num_epochs=10
     )

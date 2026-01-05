@@ -3,16 +3,17 @@
 Training script for CBIS-DDSM Breast Cancer Classification.
 
 This script allows you to train models with different configurations and compare results.
+CLAHE preprocessing is automatically applied in the data pipeline.
 
 Usage:
-    # Train ResNet34 with CLAHE (recommended)
-    python train_script.py --backbone resnet34 --use-clahe --epochs 10
-    
-    # Train ResNet34 without CLAHE for comparison
-    python train_script.py --backbone resnet34 --no-clahe --epochs 10
+    # Train ResNet34 (recommended)
+    python train_script.py --backbone resnet34 --epochs 10
     
     # Train ResNet18 (smaller, faster)
-    python train_script.py --backbone resnet18 --use-clahe --epochs 10
+    python train_script.py --backbone resnet18 --epochs 10
+    
+    # Train EfficientNet-B0
+    python train_script.py --backbone efficientnet_b0 --epochs 10
 """
 
 import argparse
@@ -32,21 +33,6 @@ def main():
         default='resnet34',
         choices=['resnet18', 'resnet34', 'efficientnet_b0'],
         help='Model backbone architecture'
-    )
-    
-    parser.add_argument(
-        '--use-clahe',
-        dest='use_clahe',
-        action='store_true',
-        default=True,
-        help='Use CLAHE preprocessing (default)'
-    )
-    
-    parser.add_argument(
-        '--no-clahe',
-        dest='use_clahe',
-        action='store_false',
-        help='Do not use CLAHE preprocessing'
     )
     
     parser.add_argument(
@@ -77,7 +63,6 @@ def main():
     print("TRAINING CONFIGURATION")
     print("=" * 70)
     print(f"Backbone:     {args.backbone}")
-    print(f"CLAHE:        {args.use_clahe}")
     print(f"Epochs:       {args.epochs}")
     print(f"Batch Size:   {args.batch_size}")
     print(f"Learning Rate: {args.lr}")
@@ -87,7 +72,6 @@ def main():
     try:
         trainer = run_experiment(
             backbone=args.backbone,
-            use_clahe=args.use_clahe,
             num_epochs=args.epochs,
             batch_size=args.batch_size
         )

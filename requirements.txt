@@ -1,9 +1,7 @@
 torch
 torchvision
-fastapi
-uvicorn
-python-multipart
 opencv-python-headless
+streamlit
 numpy
 pandas
 pillow

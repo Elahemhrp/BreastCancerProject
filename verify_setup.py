@@ -10,7 +10,7 @@ sys.path.append(os.path.abspath('.'))
 print("1. Testing Imports...")
 try:
     from core.config import Config
-    from core.preprocessing import apply_clahe, get_transforms, preprocess_image
+    from core.preprocessing import get_transforms, preprocess_image
     from core.model import BreastCancerModel
     from core.inference import Predictor
     print("   [OK] Imports successful.")
@@ -18,16 +18,18 @@ except ImportError as e:
     print(f"   [FAIL] Import failed: {e}")
     sys.exit(1)
 
-print("\n2. Testing Preprocessing (CLAHE)...")
+print("\n2. Testing Preprocessing (Pipeline)...")
 try:
-    dummy_img = np.random.randint(0, 255, (100, 100), dtype=np.uint8)
-    processed = apply_clahe(dummy_img)
-    if processed.shape == (100, 100, 3):
-        print("   [OK] CLAHE output shape correct.")
+    dummy_img = np.random.randint(0, 255, (100, 100, 3), dtype=np.uint8)
+    dummy_pil = Image.fromarray(dummy_img)
+    processed = preprocess_image(dummy_pil)
+    
+    if processed.shape == (1, 3, 224, 224):  # Batch dim + C + H + W
+        print("   [OK] Preprocessing output shape correct.")
     else:
-        print(f"   [FAIL] CLAHE output shape incorrect: {processed.shape}")
+        print(f"   [FAIL] Preprocessing output shape incorrect: {processed.shape}")
 except Exception as e:
-    print(f"   [FAIL] CLAHE failed: {e}")
+    print(f"   [FAIL] Preprocessing failed: {e}")
 
 print("\n3. Testing Model Initialization...")
 try:

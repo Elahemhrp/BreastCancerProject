@@ -4,7 +4,8 @@ import pandas as pd
 from PIL import Image
 import torch
 from torch.utils.data import Dataset
-from torchvision import transforms
+import albumentations as A
+from albumentations.pytorch import ToTensorV2
 from typing import Optional, List, Tuple
 import os
 import glob
@@ -45,37 +46,48 @@ def apply_clahe(image_np, clip_limit=2.0, tile_grid_size=(8, 8)):
     return equalized_rgb
 
 
+
 def get_transforms(phase="train"):
     """
-    Get PyTorch transforms for training or inference.
+    Get Albumentations transforms for training or inference.
     Args:
         phase: 'train' or 'val'/'test'.
     Returns:
-        Compose object of transforms.
+        A.Compose object of transforms.
     """
+    # Base transforms (CLAHE + Normalize + ToTensor)
+    base_transforms = [
+        A.CLAHE(p=1.0, clip_limit=(2.0, 2.0), tile_grid_size=(8, 8)),
+        A.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
+        ToTensorV2()
+    ]
+
     if phase == "train":
-        return transforms.Compose([
-            transforms.Resize(Config.IMAGE_SIZE),
-            transforms.RandomHorizontalFlip(),
-            transforms.RandomRotation(10),
-            transforms.ToTensor(),
-            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+        return A.Compose([
+             # Augmentations
+             A.Resize(height=Config.IMAGE_SIZE[0], width=Config.IMAGE_SIZE[1]), # Ensure size
+             *base_transforms[:1], # CLAHE first
+             A.HorizontalFlip(p=0.5), 
+             A.VerticalFlip(p=0.5),
+             A.Rotate(limit=30, border_mode=cv2.BORDER_CONSTANT, value=0, p=0.7),
+             A.GaussNoise(p=0.3),
+             # A.CoarseDropout(max_holes=6, max_height=8, max_width=8, min_holes=1, p=0.3),
+             *base_transforms[1:], # Normalize and ToTensor
         ])
+    
     else:
-        return transforms.Compose([
-            transforms.Resize(Config.IMAGE_SIZE),
-            transforms.ToTensor(),
-            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-        ])
+        # Validation/Test
+        return A.Compose([
+            A.Resize(height=Config.IMAGE_SIZE[0], width=Config.IMAGE_SIZE[1]),
+        ] + base_transforms)
 
 
-def preprocess_image(image_path_or_pil, use_clahe=True):
+def preprocess_image(image_path_or_pil):
     """
-    Full preprocessing pipeline: Load -> (Optional CLAHE) -> Transform -> Batch Dimension.
+    Full preprocessing pipeline: Load -> Transform (Resize, CLAHE, Normalize, ToTensor) -> Batch Dimension.
     
     Args:
         image_path_or_pil: Path to image or PIL Image object.
-        use_clahe: If True, apply CLAHE enhancement. If False, use raw image.
     
     Returns:
         Preprocessed tensor with batch dimension.
@@ -87,22 +99,12 @@ def preprocess_image(image_path_or_pil, use_clahe=True):
         
     image_np = np.array(image)
     
-    if use_clahe:
-        # Apply CLAHE
-        processed_np = apply_clahe(image_np)
-    else:
-        # Keep original (ensure RGB format)
-        if len(image_np.shape) == 2:
-            processed_np = cv2.cvtColor(image_np, cv2.COLOR_GRAY2RGB)
-        else:
-            processed_np = image_np
-    
-    # Convert back to PIL for transforms
-    processed_pil = Image.fromarray(processed_np)
-    
-    # Apply Transforms
+    # Get transforms (Test phase)
     transform = get_transforms(phase="test")
-    tensor = transform(processed_pil)
+    
+    # Apply Transforms (Albumentations expects image=np_array)
+    augmented = transform(image=image_np)
+    tensor = augmented['image']
     
     # Add batch dimension
     return tensor.unsqueeze(0)
@@ -300,16 +302,13 @@ class CBISDDSMDataset(Dataset):
         csv_path: Path to CSV metadata file. Defaults to Config.TRAIN_DESC_CSV.
         jpeg_dir: Path to jpeg images directory. Defaults to Config.JPEG_DIR.
         phase: 'train' or 'val'/'test' (affects augmentation).
-        use_clahe: If True, apply CLAHE preprocessing. If False, use raw images.
-                   This enables A/B comparison of training modes.
     
     Pipeline:
         1. Parse CSV metadata
         2. Locate correct folders in jpeg directory
         3. Select cropped images (not ROI masks) based on color count
-        4. Optionally apply CLAHE preprocessing
-        5. Apply transforms (resize, normalize, augmentation)
-        6. Return (tensor, label) pairs
+        4. Apply transforms (CLAHE, resize, normalize, augmentation)
+        5. Return (tensor, label) pairs
     """
     
     def __init__(
@@ -317,12 +316,10 @@ class CBISDDSMDataset(Dataset):
         csv_path: str = None, 
         jpeg_dir: str = None, 
         phase: str = 'train', 
-        use_clahe: bool = True
     ):
         self.csv_path = csv_path or Config.TRAIN_DESC_CSV
         self.jpeg_dir = jpeg_dir or Config.JPEG_DIR
         self.phase = phase
-        self.use_clahe = use_clahe
         
         # Parse CSV and build list of (image_path, label)
         self.samples = parse_csv_and_build_dataset(self.csv_path, self.jpeg_dir)
@@ -331,7 +328,7 @@ class CBISDDSMDataset(Dataset):
         self.transform = get_transforms(phase=self.phase)
         
         logger.info(f"CBISDDSMDataset initialized: {len(self.samples)} samples, "
-                    f"phase={self.phase}, use_clahe={self.use_clahe}")
+                    f"phase={self.phase}")
     
     def __len__(self) -> int:
         return len(self.samples)
@@ -343,21 +340,9 @@ class CBISDDSMDataset(Dataset):
         image = Image.open(image_path).convert("RGB")
         image_np = np.array(image)
         
-        # Apply CLAHE if enabled
-        if self.use_clahe:
-            processed_np = apply_clahe(image_np)
-        else:
-            # Keep original
-            if len(image_np.shape) == 2:
-                processed_np = cv2.cvtColor(image_np, cv2.COLOR_GRAY2RGB)
-            else:
-                processed_np = image_np
-        
-        # Convert to PIL for transforms
-        processed_pil = Image.fromarray(processed_np)
-        
-        # Apply transforms
-        tensor = self.transform(processed_pil)
+        # Apply transforms (Augmentation + CLAHE + Normalize + ToTensor)
+        augmented = self.transform(image=image_np)
+        tensor = augmented['image']
         
         return tensor, label
     

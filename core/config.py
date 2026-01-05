@@ -17,7 +17,7 @@ class Config:
     
     # Model Settings
     IMAGE_SIZE = (224, 224)
-    BATCH_SIZE = 32
+    BATCH_SIZE = 64
     NUM_CLASSES = 2  # Benign, Malignant
     BACKBONE = "resnet34"  # Options: resnet18, resnet34, efficientnet_b0
     
